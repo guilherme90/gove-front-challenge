@@ -1,11 +1,17 @@
 import Table from 'react-bootstrap/Table'
-import { Card, CardBody, CardTitle, CardText, CardFooter, Button } from 'react-bootstrap'
-import { useState } from 'react'
+import { Card, CardBody, CardTitle, CardText, CardFooter, Button, FormCheck } from 'react-bootstrap'
+import { ChangeEvent, ChangeEventHandler, SyntheticEvent, useCallback, useEffect, useState } from 'react'
 import { FormContact, FormData } from '@/app/components/contacts/form-contact'
-import useContactsPaginate from '@/app/components/contacts/hooks/useContactsPaginate'
+import { useContacts } from '@/app/components/contacts/hooks/useContacts'
+import Loading from '@/app/components/loading'
+import Paginator from '@/app/components/paginator'
+import FileUpload from '@/app/components/file-upload'
 
 export default function ContactsList () {
-  const { contactsLoading, contacts } = useContactsPaginate()
+  const [page, setPage] = useState<number>(1)
+  const [contactsNotified, setContactsNotified] = useState<string>('off')
+  const { contactsLoading, contacts } = useContacts(contactsNotified, page)
+
   const [show, setShow] = useState<boolean>(false)
   const [formData, setFormData] = useState<FormData>({
     id: 0,
@@ -20,15 +26,34 @@ export default function ContactsList () {
     setShow(true)
   }
 
+  const changePage = (page: number) => setPage(page)
+
+  const onChangeContactsNotified = (e: ChangeEvent<HTMLInputElement>) => setContactsNotified(e.target.checked ? 'on' : 'off')
+
   return (
     <>
       <Card className="shadow">
         <CardBody>
+          <CardTitle>Upload</CardTitle>
+          <CardText>
+            <FileUpload />
+          </CardText>
+        </CardBody>
+      </Card>
+
+      <Card className="shadow mt-3">
+        <CardBody>
           <CardTitle>Lista de contatos</CardTitle>
           <CardText>
-            {contactsLoading && (
-              <>Carregando...</>
-            )}
+            <Loading loading={contactsLoading} />
+
+            <Card className="mb-4">
+              <CardBody>
+                <h6>Filtrar por contatos</h6>
+                <FormCheck type="switch" label="Notificados" defaultValue={contactsNotified} onChange={onChangeContactsNotified} />
+              </CardBody>
+            </Card>
+
 
             {!contactsLoading && (
               <Table responsive>
@@ -61,7 +86,17 @@ export default function ContactsList () {
           </CardText>
 
           <CardFooter>
-            Fooe....
+            {contacts?.data.length && (
+              <Paginator
+                current_page={contacts?.current_page}
+                last_page={contacts?.last_page}
+                per_page={contacts?.per_page}
+                from={contacts?.from}
+                to={contacts?.to}
+                total={contacts?.total}
+                changePage={changePage}
+              />
+            )}
           </CardFooter>
         </CardBody>
       </Card>

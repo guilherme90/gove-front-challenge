@@ -9,6 +9,8 @@ import {
   ModalHeader,
   ModalTitle
 } from 'react-bootstrap'
+import { ChangeEvent, useEffect, useState } from 'react'
+import { useChangeSchedule } from '@/app/components/contacts/hooks/useContacts'
 
 export interface FormData {
   id: number;
@@ -24,6 +26,17 @@ interface FormContactsProps {
 }
 
 export function FormContact({ show, handleClose, data }: FormContactsProps) {
+  const [formData, setFormData] = useState<{ scheduled_at: string }>({ scheduled_at: data.scheduled_at })
+  const { loading, success, onClick } = useChangeSchedule(data.id, formData.scheduled_at)
+
+  const onChange = (e: ChangeEvent<HTMLInputElement>) => setFormData({ scheduled_at: e.target.value })
+
+  useEffect(() => {
+    if (success) {
+      handleClose()
+    }
+  }, [success])
+
   return (
     <Modal show={show} onHide={handleClose}>
       <ModalHeader closeButton>
@@ -43,16 +56,16 @@ export function FormContact({ show, handleClose, data }: FormContactsProps) {
 
           <FormGroup className="mb-3" controlId="formBasicPassword">
             <FormLabel>Data da notificação</FormLabel>
-            <FormControl type="datetime-local" defaultValue={data.scheduled_at} />
+            <FormControl type="datetime-local" defaultValue={data.scheduled_at} onChange={onChange} />
           </FormGroup>
         </Form>
       </ModalBody>
       <ModalFooter>
-        <Button variant="secondary" onClick={handleClose}>
+        <Button variant="secondary" onClick={handleClose} disabled={loading}>
           Fechar
         </Button>
-        <Button variant="primary" onClick={handleClose}>
-          Salvar
+        <Button variant="primary" onClick={onClick} disabled={loading}>
+          {loading ? 'Salvando, aguarde...' : 'Salvar'}
         </Button>
       </ModalFooter>
     </Modal>

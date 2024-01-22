@@ -20,12 +20,12 @@ export default function RootLayout ({
     <html lang="en">
     <body className={inter.className}>
       <>
-        <Navbar bg="dark" fixed="top" data-bs-theme="dark" className="shadow-sm">
+        <Navbar bg="dark" data-bs-theme="dark" className="shadow-sm">
           <Container>
             <NavbarBrand>Gove</NavbarBrand>
           </Container>
         </Navbar>
-        <Container className="pt-3">{children}</Container>
+        <Container className="pt-5">{children}</Container>
       </>
     </body>
     </html>

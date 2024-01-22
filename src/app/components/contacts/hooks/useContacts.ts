@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
-import { get } from '@/app/utils/http'
+import { get, put } from '@/app/utils/http'
 
 interface IContacts {
   current_page: number;
-  from: number;
+  last_page: number;
   per_page: number;
   to: number;
+  from: number;
+  total: number;
   data: {
     id: number;
     contact_id: number;
@@ -24,17 +26,17 @@ interface IContacts {
   }[]
 }
 
-export default function useContactsPaginate() {
+export function useContacts(notified: string, page: number) {
   const [contactsLoading, setContactsLoading] = useState<boolean>(false)
   const [contacts, setContacts] = useState<IContacts | null>(null)
 
   useEffect(() => {
     setContactsLoading(true)
-
     const request = async () => {
       const response = await get<IContacts>('/contacts', {
         params: {
-          notified: 'on'
+          notified,
+          page
         }
       }) as IContacts
 
@@ -43,10 +45,29 @@ export default function useContactsPaginate() {
     }
 
     request()
-  }, [])
+  }, [notified, page])
 
   return {
     contactsLoading,
     contacts
   }
+}
+
+export function useChangeSchedule(id: number, scheduledAt: string) {
+  const [loading, setLoading] = useState<boolean>(false)
+  const [success, setSuccess] = useState<boolean>(false)
+
+  const onClick = async () => {
+    setLoading(true)
+
+    try {
+      await put(`/contacts/${id}`, { scheduled_at: scheduledAt })
+      setLoading(false)
+      setSuccess(true)
+    } catch (e) {
+      setLoading(false)
+    }
+  }
+
+  return { loading, success, onClick }
 }
